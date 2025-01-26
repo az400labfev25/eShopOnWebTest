@@ -1,0 +1,60 @@
+trigger:
+  - "*"
+
+pool:
+  vmImage: "windows-latest"
+
+variables:
+  buildConfiguration: "Release"
+
+stages:
+  # Build Stage
+  - stage: Build
+    displayName: Build the Application
+    pool:
+      name: rmajidpool
+    jobs:
+      - job: BuildJob
+        displayName: Build and Test
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: "sdk"
+              version: "9.x"
+
+          - script: |
+              dotnet restore
+              dotnet build --configuration $(buildConfiguration)
+              dotnet test --no-build --verbosity normal
+            displayName: Build and Test Application
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "$(System.DefaultWorkingDirectory)"
+              ArtifactName: "drop"
+
+  # Deploy Stage
+  - stage: Deploy
+    displayName: Deploy to Azure
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployJob
+        displayName: Deploy to Azure Web App
+        pool:
+          name: rmajidpool
+        environment: "dev"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadBuildArtifacts@0
+                  inputs:
+                    artifactName: "drop"
+
+                - task: AzureWebApp@1
+                  inputs:
+                    azureSubscription: "azure_subs"
+                    appType: "webAppLinux"
+                    appName: "predemopath05d2"
+                    package: "$(Pipeline.Workspace)/drop"
