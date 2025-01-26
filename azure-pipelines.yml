@@ -25,7 +25,7 @@ stages:
           - script: |
               dotnet restore
               dotnet build ./eShopOnWeb.sln --configuration Release
-              dotnet test ./eShopOnWeb.sln --no-build --verbosity normal
+              dotnet test ./eShopOnWeb.sln --no-restore --verbosity normal --verbosity normal
             displayName: Build and Test Application
 
           - task: PublishBuildArtifacts@1
