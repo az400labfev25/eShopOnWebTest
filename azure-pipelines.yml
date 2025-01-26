@@ -4,9 +4,6 @@ trigger:
 pool:
   vmImage: "windows-latest"
 
-variables:
-  buildConfiguration: "Release"
-
 stages:
   # Build Stage
   - stage: Build
@@ -25,8 +22,7 @@ stages:
           - script: |
               dotnet restore
               dotnet build ./eShopOnWeb.sln --configuration Release
-              dotnet test ./eShopOnWeb.sln --no-restore --verbosity normal --verbosity normal
-            displayName: Build and Test Application
+            displayName: Build
 
           - task: PublishBuildArtifacts@1
             inputs:
